@@ -2,13 +2,14 @@ import { json } from '@sveltejs/kit';
 import Anthropic from '@anthropic-ai/sdk';
 import { ANTHROPIC_API_KEY } from '$env/static/private';
 import { countWords } from 'alfaaz'; // Import alfaaz word counter
+import type { ApiCallStats, StoryRequest } from '$lib/types';
 
 const anthropic = new Anthropic({
   apiKey: ANTHROPIC_API_KEY
 });
 
 // Function to create improved prompts for continuation
-function createContinuationPrompt(genre, keywords, wordLength, currentStory, remainingWords) {
+function createContinuationPrompt(genre: string, keywords: string, wordLength: number, currentStory: string, remainingWords: number): string {
   return `Continue this ${genre} story about ${keywords}. 
   
 Here's what has been written so far:
@@ -18,10 +19,10 @@ ${currentStory}
 Continue the story from exactly where it left off. Write approximately ${remainingWords} more words to reach the target length of ${wordLength} words total. Maintain the same tone, perspective, and style as the existing text.`;
 }
 
-export async function POST({ request }) {
+export async function POST({ request }): Promise<Response> {
   console.log("[API] Story generation request received");
   try {
-    const { genre, keywords, wordLength } = await request.json();
+    const { genre, keywords, wordLength }: StoryRequest = await request.json();
     console.log("[API] Request parameters:", { genre, keywords, wordLength });
     
     // Initialize tracking variables
@@ -29,7 +30,7 @@ export async function POST({ request }) {
     let currentWordCount = 0;
     const targetWordCount = wordLength;
     let apiCallCount = 0;
-    const allApiCalls = [];
+    const allApiCalls: ApiCallStats[] = [];
     const totalStartTime = Date.now();
 
     const encoder = new TextEncoder();
@@ -147,8 +148,8 @@ export async function POST({ request }) {
 
           // Calculate final statistics
           const totalDuration = (Date.now() - totalStartTime) / 1000;
-          const totalTokens = allApiCalls.reduce((sum, call) => sum + call.tokensUsed, 0);
-          const totalCost = allApiCalls.reduce((sum, call) => sum + call.cost, 0);
+          const totalTokens: number = allApiCalls.reduce((sum: number, call: ApiCallStats) => sum + call.tokensUsed, 0);
+          const totalCost: number = allApiCalls.reduce((sum: number, call: ApiCallStats) => sum + call.cost, 0);
           
           console.log("[API] All generation calls completed");
           console.log(`[API] Total calls made: ${apiCallCount}`);
@@ -169,7 +170,7 @@ export async function POST({ request }) {
             totalTime: totalDuration,
             totalCost: totalCost,
             callsMade: apiCallCount,
-            individualCalls: allApiCalls,
+            individualCalls: allApiCalls as ApiCallStats[],
             completionPercentage: Math.round((currentWordCount / targetWordCount) * 100)
           });
           

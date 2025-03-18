@@ -24,3 +24,10 @@ export interface StoryRequest {
       tokensPerSecond: number;
     };
   }
+  export interface ApiCallStats {
+    callNumber: number;
+    wordCount: number;
+    tokensUsed: number;
+    duration: number;
+    cost: number;
+  }

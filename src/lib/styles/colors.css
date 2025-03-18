@@ -1,0 +1,63 @@
+/* Futuristic Tech Color Palette for Steppe Stories */
+
+:root {
+  /* Primary colors */
+  --color-background-primary: #13101f;   /* Deep purple-blue background */
+  --color-background-secondary: #1c1633; /* Slightly lighter background for cards */
+  --color-background-tertiary: #252043;  /* Background for hover states and highlights */
+  
+  /* Accent colors */
+  --color-accent-primary: #9747ff;       /* Bright purple for CTAs and primary buttons */
+  --color-accent-secondary: #5034ff;     /* Secondary accent for borders and highlights */
+  --color-accent-tertiary: #4facfe;      /* Bright blue for special elements and gradients */
+  
+  /* Text colors */
+  --color-text-primary: #ffffff;         /* White text for maximum readability */
+  --color-text-secondary: #c4c4ff;       /* Light purple text for secondary information */
+  --color-text-tertiary: #8c89a2;        /* Muted purple-gray for less important text */
+  
+  /* Functional colors */
+  --color-success: #36e3b4;              /* Teal/green for success states */
+  --color-warning: #ffb13d;              /* Amber yellow for warnings */
+  --color-error: #ff3d7c;                /* Bright pink/red for errors */
+  --color-info: #5dbdff;                 /* Light blue for info messages */
+  
+  /* Gradient definitions */
+  --gradient-primary: linear-gradient(135deg, #9747ff 0%, #4facfe 100%);
+  --gradient-background: linear-gradient(180deg, #13101f 0%, #1c1633 100%);
+  --gradient-accent: linear-gradient(135deg, #5034ff 0%, #9747ff 100%);
+  
+  /* Shadow effects */
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.25);
+  --shadow-button: 0 2px 10px rgba(151, 71, 255, 0.3);
+  --shadow-glow: 0 0 15px rgba(151, 71, 255, 0.5);
+}
+
+/* Usage Guide:
+ *
+ * Backgrounds:
+ * --color-background-primary: Main page background
+ * --color-background-secondary: Card and container backgrounds
+ * --color-background-tertiary: Elevated components, hover states
+ *
+ * Accents:
+ * --color-accent-primary: Primary buttons, CTAs, active states
+ * --color-accent-secondary: Borders, highlights, secondary buttons
+ * --color-accent-tertiary: Special highlights, gradients, decorative elements
+ *
+ * Text:
+ * --color-text-primary: Main text, headings
+ * --color-text-secondary: Secondary text, descriptions
+ * --color-text-tertiary: Placeholders, disabled text
+ *
+ * Functional:
+ * --color-success: Success messages, completions
+ * --color-warning: Warning messages, pending states
+ * --color-error: Error messages, failures
+ * --color-info: Information messages, tips
+ *
+ * Gradients:
+ * --gradient-primary: Primary gradient for important CTAs, branded elements
+ * --gradient-background: Subtle background gradient
+ * --gradient-accent: Secondary gradient for accent elements
+ */ 
