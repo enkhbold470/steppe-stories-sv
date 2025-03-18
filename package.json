@@ -13,7 +13,8 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run"
+		"test": "npm run test:unit -- --run",
+		"production": "HOST=0.0.0.0 yarn build && yarn preview -- --port 5173"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
