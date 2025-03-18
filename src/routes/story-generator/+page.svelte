@@ -348,8 +348,8 @@
                   </div>
                 </div>
                 
-                {#if wordCount > 0}
-                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
+                  {#if totalTokens > 0}
                     <div class="bg-gray-700 p-3 rounded animate-fadeInUp" style="animation-delay: 100ms">
                       <span class="block text-gray-400 text-sm">Words</span>
                       <span class="font-medium text-white">{wordCount}</span>
@@ -366,9 +366,25 @@
                       <span class="block text-gray-400 text-sm">Cost~</span>
                       <span class="font-medium text-white">${totalCost.toFixed(4)}</span>
                     </div>
-                
-                  </div>
-                {/if}
+                  {:else}
+                    <div class="bg-gray-700 p-3 rounded animate-pulse">
+                      <span class="block text-gray-400 text-sm">Words</span>
+                      <span class="font-medium text-white">Loading...</span>
+                    </div>
+                    <div class="bg-gray-700 p-3 rounded animate-pulse">
+                      <span class="block text-gray-400 text-sm">Tokens~</span>
+                      <span class="font-medium text-white">Loading...</span>
+                    </div>
+                    <div class="bg-gray-700 p-3 rounded animate-pulse">
+                      <span class="block text-gray-400 text-sm">Tokens/sec~</span>
+                      <span class="font-medium text-white">Loading...</span>
+                    </div>
+                    <div class="bg-gray-700 p-3 rounded animate-pulse">
+                      <span class="block text-gray-400 text-sm">Cost~</span>
+                      <span class="font-medium text-white">Loading...</span>
+                    </div>
+                  {/if}
+                </div>
               </div>
             <!-- {/if} -->
             
