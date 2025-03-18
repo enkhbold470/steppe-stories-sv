@@ -1,3 +1,11 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+
+@layer base {
+  html {
+    @apply bg-gray-900 text-gray-100;
+  }
+}
+

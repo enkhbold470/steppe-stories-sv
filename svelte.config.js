@@ -11,6 +11,17 @@ const config = {
 	kit: {
 		adapter: adapter()
 	},
+	alias: {
+		$lib: './src/lib',
+		$components: './src/components',
+		$routes: './src/routes',
+		$types: './src/types',
+		$utils: './src/utils',
+		$hooks: './src/hooks',
+		$stores: './src/stores',
+		$styles: './src/styles',
+		$env: './src/env',
+	},
 
 	extensions: ['.svelte', '.svx']
 };
