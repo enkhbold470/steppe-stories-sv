@@ -3,15 +3,24 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import type { Session } from '@supabase/supabase-js';
+  import type { Session, User } from '@supabase/supabase-js';
   
   let session: Session | null = null;
+  let user: User | null = null;
   let isOpen = false;
+
+  // Define menu items
+  const menuItems = [
+    { name: 'Home', path: '/' },
+    { name: 'Story Generator', path: '/story-generator' },
+    { name: 'My Stories', path: '/stories', requiresAuth: true },
+    { name: 'Profile', path: '/profile', requiresAuth: true },
+  ];
   
   onMount(async () => {
-    const { data } = await supabase.auth.getSession();
-    session = data.session;
-    
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+
     supabase.auth.onAuthStateChange((_event, _session) => {
       session = _session;
     });
@@ -36,40 +45,18 @@
         </a>
         <div class="hidden md:block ml-10">
           <div class="flex items-center space-x-4">
-            <a 
-              href="/" 
-              class={$page.url.pathname === '/' ? 
-                'bg-gray-800 text-white px-3 py-2 rounded-md text-sm font-medium' : 
-                'text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium'}
-            >
-              Home
-            </a>
-            <a 
-              href="/story-generator" 
-              class={$page.url.pathname === '/story-generator' ? 
-                'bg-gray-800 text-white px-3 py-2 rounded-md text-sm font-medium' : 
-                'text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium'}
-            >
-              Story Generator
-            </a>
-            {#if session}
-              <a 
-                href="/stories" 
-                class={$page.url.pathname === '/stories' ? 
-                  'bg-gray-800 text-white px-3 py-2 rounded-md text-sm font-medium' : 
-                  'text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium'}
-              >
-                My Stories
-              </a>
-              <a 
-                href="/profile" 
-                class={$page.url.pathname === '/profile' ? 
-                  'bg-gray-800 text-white px-3 py-2 rounded-md text-sm font-medium' : 
-                  'text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium'}
-              >
-                Profile
-              </a>
-            {/if}
+            {#each menuItems as item}
+              {#if !item.requiresAuth || session}
+                <a 
+                  href={item.path} 
+                  class={$page.url.pathname === item.path ? 
+                    'bg-gray-800 text-white px-3 py-2 rounded-md text-sm font-medium' : 
+                    'text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium'}
+                >
+                  {item.name}
+                </a>
+              {/if}
+            {/each}
           </div>
         </div>
       </div>
@@ -114,39 +101,19 @@
   <!-- Mobile menu, show/hide based on menu state -->
   <div class={isOpen ? 'block md:hidden' : 'hidden md:hidden'}>
     <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-      <a 
-        href="/" 
-        class={$page.url.pathname === '/' ? 
-          'bg-gray-800 text-white block px-3 py-2 rounded-md text-base font-medium' : 
-          'text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium'}
-      >
-        Home
-      </a>
-      <a 
-        href="/story-generator" 
-        class={$page.url.pathname === '/story-generator' ? 
-          'bg-gray-800 text-white block px-3 py-2 rounded-md text-base font-medium' : 
-          'text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium'}
-      >
-        Story Generator
-      </a>
+      {#each menuItems as item}
+        {#if !item.requiresAuth || session}
+          <a 
+            href={item.path} 
+            class={$page.url.pathname === item.path ? 
+              'bg-gray-800 text-white block px-3 py-2 rounded-md text-base font-medium' : 
+              'text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium'}
+          >
+            {item.name}
+          </a>
+        {/if}
+      {/each}
       {#if session}
-        <a 
-          href="/stories" 
-          class={$page.url.pathname === '/stories' ? 
-            'bg-gray-800 text-white block px-3 py-2 rounded-md text-base font-medium' : 
-            'text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium'}
-        >
-          My Stories
-        </a>
-        <a 
-          href="/profile" 
-          class={$page.url.pathname === '/profile' ? 
-            'bg-gray-800 text-white block px-3 py-2 rounded-md text-base font-medium' : 
-            'text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium'}
-        >
-          Profile
-        </a>
         <button 
           on:click={handleSignOut}
           class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left"
