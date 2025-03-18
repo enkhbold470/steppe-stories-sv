@@ -3,7 +3,7 @@
     import StoryForm from '$lib/components/StoryForm.svelte';
     import StoryPreview from '$lib/components/StoryPreview.svelte';
     import StatsDisplay from '$lib/components/StatsDisplay.svelte';
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
     import { Bot } from '@lucide/svelte';
     import { supabase } from '$lib/supabaseClient';
     import { goto } from '$app/navigation';
@@ -26,8 +26,22 @@
     let title = '';
     let isGenerating = false; // Track if we're in generation mode for layout
   
-    // Check user authentication on mount
+    // Handle page navigation warning
+    function handleBeforeUnload(event: BeforeUnloadEvent) {
+      if (isGenerating) {
+        // Standard way to show a confirmation dialog before leaving a page
+        event.preventDefault();
+        // This message may not be displayed in some browsers, as they use their own generic message
+        event.returnValue = 'Your story is still being generated. Are you sure you want to leave?';
+        return event.returnValue;
+      }
+    }
+
+    // Check user authentication on mount and set up navigation warning
     onMount(async () => {
+      // Add beforeunload event listener
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      
       // Using getUser instead of getSession for security (per custom instructions)
       const { data, error: userError } = await supabase.auth.getUser();
       
@@ -44,6 +58,11 @@
         // Redirect to login if not authenticated
         goto('/');
       }
+    });
+    
+    // Clean up event listener when component is destroyed
+    onDestroy(() => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     });
   
     async function generateStory(request: StoryRequest) {
@@ -79,29 +98,26 @@
         let storyDone = false;
         let buffer = '';
         
+        // Read the stream
         while (!storyDone) {
-          const { done, value } = await reader.read();
+          const { value, done } = await reader.read();
           
           if (done) {
-            console.log("[FrontEnd] Stream done");
-            storyDone = true;
-            progress = 100;
+            console.log("[FrontEnd] Stream ended");
             break;
           }
           
-          const chunk = decoder.decode(value);
-          console.log("[FrontEnd] Received chunk:", chunk.substring(0, 100) + "...");
-          
-          // Append the new chunk to our buffer
+          // Decode the stream
+          const chunk = decoder.decode(value, { stream: true });
           buffer += chunk;
           
-          // Split the buffer by newlines and process each complete line
+          // Process line by line (JSON messages are separated by newlines)
           const lines = buffer.split('\n');
+          buffer = lines.pop() || ''; // Keep the last potentially incomplete line in the buffer
           
-          // The last line might be incomplete, so we keep it in the buffer
-          buffer = lines.pop() || '';
-          
-          for (const line of lines.filter(line => line.trim())) {
+          for (const line of lines) {
+            if (!line.trim()) continue; // Skip empty lines
+            
             try {
               console.log("[FrontEnd] Processing line:", line.substring(0, 50) + "...");
               const data = JSON.parse(line);
@@ -136,46 +152,27 @@
                 progress = 100;
               }
             } catch (e) {
-              console.warn('[FrontEnd] Failed to parse JSON chunk:', line);
-              console.error('[FrontEnd] Parse error:', e);
-              
-              // If parsing failed, try to recover content from plaintext
-              if (line.trim() && !line.includes('{') && !line.includes('}')) {
-                console.log('[FrontEnd] Treating as plain text content:', line.substring(0, 30) + "...");
-                accumulatedContent += line + ' ';
-                
-                // Update word count
-                wordCount = accumulatedContent.split(/\s+/).filter(Boolean).length;
-                
-                // Estimate progress
-                const targetWords = request.wordLength || 1000;
-                progress = Math.min(Math.round((wordCount / targetWords) * 100), 99);
-              }
+              console.error("[FrontEnd] Error processing line:", e);
+              console.error("[FrontEnd] Problematic line:", line);
             }
           }
         }
         
-        console.log("[FrontEnd] Story generated successfully:", { 
-          titleLength: title.length,
-          contentLength: accumulatedContent.length,
-          wordCount,
-          totalTokens,
-          totalCost,
-          totalTime
-        });
+        console.log("[FrontEnd] Story generation complete, total content length:", accumulatedContent.length);
         
         // Save the generated story to the database
         if (user && accumulatedContent) {
           await saveStoryToDatabase();
         }
         
-      } catch (err) {
-        console.error("[FrontEnd] Error during story generation:", err);
-        error = 'Failed to generate story. Please try again.';
+      } catch (error) {
+        console.error("[FrontEnd] Error during story generation:", error);
+        throw error;
       } finally {
         loading = false;
-        // Keep isGenerating true if we have content
-        isGenerating = accumulatedContent.length > 0;
+        // Don't set isGenerating to false here - we want to keep the UI in the expanded view
+        // to show the generated story and stats. It will be set to false when user clicks
+        // "Generate Another Story" through the resetGenerator function
       }
     }
   
@@ -270,18 +267,25 @@
       }
     }
   
-    function handleGenerate(event: CustomEvent<StoryRequest>) {
-      const request = event.detail;
-      loading = true;
-      error = '';
-      currentRequest = request;
-      progress = 0;
+    async function handleGenerate(event: CustomEvent<StoryRequest>) {
+      currentRequest = event.detail;
+      console.log("[FrontEnd] Handle generate called with request:", currentRequest);
       
-      generateStory(request).catch(err => {
-        console.error("Error during story generation:", err);
-        error = 'Failed to generate story. Please try again.';
-        loading = false;
-      });
+      // Set generating state
+      isGenerating = true;
+      
+      try {
+        await generateStory(currentRequest);
+        await saveStoryToDatabase();
+      } catch (e) {
+        if (e instanceof Error) {
+          error = e.message;
+        } else {
+          error = "An unknown error occurred";
+        }
+        console.error("[FrontEnd] Error generating or saving story:", error);
+        isGenerating = false; // Reset generating state on error
+      }
     }
   
     function resetGenerator() {

@@ -58,7 +58,7 @@
     ];
   
     function handleSubmit() {
-      isGenerating = true; // Set generating state to true
+      isGenerating = true; // Set local generating state
       
       // Build enhanced prompt with selected options
       let enhancedKeywords = keywords;
@@ -85,11 +85,9 @@
         wordLength,
       });
       
-      // In a real implementation, you would reset this when the generation completes
-      // For demo purposes, we'll just set it back to false after a timeout
-      setTimeout(() => {
-        isGenerating = false;
-      }, 2000);
+      // Note: We no longer reset isGenerating to false here
+      // The parent component is responsible for managing this state
+      // based on the actual completion of story generation
     }
   
     function toggleTag(tag: string) {
