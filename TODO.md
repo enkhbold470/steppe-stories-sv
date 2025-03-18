@@ -46,3 +46,22 @@
   - [x] Add transitions for layout changes
   - [x] Add loading animations
   - [x] Improve visual feedback
+
+
+
+# Updated TODO List
+[x] Install and import alfaaz word counter library
+[x] Update API to track word count during generation
+[x] Implement logic to continue calling Claude API until word count is met
+[x] Ensure only one response is sent to frontend
+[x] Improve prompt engineering for better story generation
+[x] Add detailed console logging throughout the process
+[x] Add generation time metrics to story statistics
+[x] Update stats response to include word count from alfaaz
+[x] Store generation time metadata with stories
+[x] Add progress tracking for multiple API calls
+[x] Handle error cases properly
+[x] Implement proper streaming of content chunks
+[x] Optimize API calls to minimize token usage
+[x] Add generation timing for individual API calls
+[x] Ensure proper JSON formatting for frontend consumption

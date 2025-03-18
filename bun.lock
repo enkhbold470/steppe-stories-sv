@@ -7,6 +7,7 @@
         "@anthropic-ai/sdk": "^0.39.0",
         "@lucide/svelte": "^0.482.0",
         "@supabase/supabase-js": "^2.49.1",
+        "alfaaz": "^1.1.0",
         "marked": "^15.0.7",
         "openai": "^4.87.3",
       },
@@ -22,6 +23,7 @@
         "@testing-library/jest-dom": "^6.6.3",
         "@testing-library/svelte": "^5.2.4",
         "@types/marked": "^6.0.0",
+        "esbuild": "^0.25.1",
         "eslint": "^9.18.0",
         "eslint-config-prettier": "^10.0.1",
         "eslint-plugin-svelte": "^3.0.0",
@@ -325,6 +327,8 @@
     "agentkeepalive": ["agentkeepalive@4.6.0", "", { "dependencies": { "humanize-ms": "^1.2.1" } }, "sha512-kja8j7PjmncONqaTsB8fQ+wE2mSU2DJ9D4XKoJ5PFWIdRMa6SLSN1ff4mOr4jCbfRSsxR4keIiySJU0N9T5hIQ=="],
 
     "ajv": ["ajv@6.12.6", "", { "dependencies": { "fast-deep-equal": "^3.1.1", "fast-json-stable-stringify": "^2.0.0", "json-schema-traverse": "^0.4.1", "uri-js": "^4.2.2" } }, "sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g=="],
+
+    "alfaaz": ["alfaaz@1.1.0", "", {}, "sha512-J/P07R41APslK7NmD5303bwStN8jpRA4DdvtLeAr1Jhfj6XWGrASUWI0G6jbWjJAZyw3Lu1Pb4J8rsM/cb+xDQ=="],
 
     "ansi-regex": ["ansi-regex@5.0.1", "", {}, "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ=="],
 

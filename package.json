@@ -27,6 +27,7 @@
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/svelte": "^5.2.4",
 		"@types/marked": "^6.0.0",
+		"esbuild": "^0.25.1",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
 		"eslint-plugin-svelte": "^3.0.0",
@@ -48,6 +49,7 @@
 		"@anthropic-ai/sdk": "^0.39.0",
 		"@lucide/svelte": "^0.482.0",
 		"@supabase/supabase-js": "^2.49.1",
+		"alfaaz": "^1.1.0",
 		"marked": "^15.0.7",
 		"openai": "^4.87.3"
 	}

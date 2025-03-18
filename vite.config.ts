@@ -5,6 +5,11 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
+	esbuild: {
+		supported: {
+			'top-level-await': true
+		}
+	},
 
 	test: {
 		workspace: [
