@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+- You can @ files here
+- You can use markdown but dont have to
+
+Always start with creating todo.md to put up all the empty to-do lists, each to do list you supposed to check if you're running front and project you will probably bun run check, I prefer bun

@@ -20,3 +20,14 @@
 - [x] Add copy button for easy copying of generated stories
 - [x] Add selectable options below keywords and prompts
 - [x] Convert home screen to a landing page
+
+## Bug Fixes
+- [x] Fix story generation streaming issues
+  - [x] Format API response as proper JSON objects
+  - [x] Add robust JSON parsing in frontend
+  - [x] Implement fallback for plaintext content
+  - [x] Add better error handling
+- [x] Add extensive debugging logs
+  - [x] Add console logs to API server
+  - [x] Add console logs to frontend
+  - [x] Log stream processing details

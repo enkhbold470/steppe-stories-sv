@@ -7,14 +7,19 @@ const anthropic = new Anthropic({
 });
 
 export async function POST({ request }) {
+  console.log("[API] Story generation request received");
   try {
     const { genre, keywords, wordLength } = await request.json();
+    console.log("[API] Request parameters:", { genre, keywords, wordLength });
+    
     const prompt = `Write a ${genre} story about ${keywords} that is approximately ${wordLength} words long.`;
+    console.log("[API] Generated prompt:", prompt);
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          console.log("[API] Initializing Anthropic stream");
           const stream = await anthropic.messages.create({
             model: "claude-3-5-haiku-latest",
             max_tokens: 4096,
@@ -24,12 +29,27 @@ export async function POST({ request }) {
 
           let fullStory = "";
           const startTime = Date.now();
+          let chunkCount = 0;
 
+          console.log("[API] Starting to process stream chunks");
           for await (const chunk of stream) {
+            chunkCount++;
             if (chunk.type === 'content_block_delta') {
               const text = chunk.delta.text;
               fullStory += text;
-              controller.enqueue(encoder.encode(text));
+              
+              // Send the content as a proper JSON object
+              const contentChunk = JSON.stringify({
+                type: 'content',
+                content: text
+              });
+              
+              controller.enqueue(encoder.encode(contentChunk + '\n'));
+              
+              // Log every 10th chunk to avoid flooding the console
+              if (chunkCount % 10 === 0) {
+                console.log(`[API] Processed ${chunkCount} chunks, latest text: "${text.substring(0, 30)}..."`);
+              }
             }
           }
 
@@ -38,18 +58,40 @@ export async function POST({ request }) {
           const tokenCount = wordCount * 1.3;
           const cost = tokenCount * 0.000015;
 
-          const stats = {
+          console.log("[API] Stream completed, sending stats");
+          console.log("[API] Stats:", { totalTime, wordCount, tokenCount, cost });
+
+          // Generate a title from the first few words
+          const titleText = fullStory.split('.')[0].substring(0, 40).trim() + "...";
+          
+          // Send stats as JSON
+          const stats = JSON.stringify({
             type: 'stats',
-            tokensUsed: Math.round(tokenCount),
+            totalTokens: Math.round(tokenCount),
             cost: cost,
             time: totalTime,
             totalWords: wordCount
-          };
+          });
+          
+          // Send title as JSON
+          const title = JSON.stringify({
+            type: 'title',
+            title: titleText
+          });
+          
+          // Send completion signal as JSON
+          const complete = JSON.stringify({
+            type: 'complete'
+          });
 
-          controller.enqueue(encoder.encode('\n' + JSON.stringify(stats) + '\n'));
+          controller.enqueue(encoder.encode('\n' + stats + '\n'));
+          controller.enqueue(encoder.encode('\n' + title + '\n'));
+          controller.enqueue(encoder.encode('\n' + complete + '\n'));
           controller.close();
+          
+          console.log("[API] Response completed successfully");
         } catch (error) {
-          console.error('Stream processing error:', error);
+          console.error('[API] Stream processing error:', error);
           controller.error(error);
         }
       }
@@ -58,12 +100,11 @@ export async function POST({ request }) {
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/event-stream',
-
       }
     });
 
   } catch (error) {
-    console.error('Failed to generate story:', error);
+    console.error('[API] Failed to generate story:', error);
     return json(
       { error: error instanceof Error ? error.message : 'Failed to generate story' },
       { status: 500 }

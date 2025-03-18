@@ -50,7 +50,9 @@
         progress = 0;
         wordCount = 0;
         title = '';
+        error = '';
         
+        console.log("[FrontEnd] Starting story generation with request:", request);
         const startTime = Date.now();
         
         const response = await fetch('/api/generate', { 
@@ -62,32 +64,46 @@
         });
         
         if (!response.ok) {
-          throw new Error('Failed to generate story');
+          throw new Error(`Failed to generate story: ${response.status} ${response.statusText}`);
         }
         
+        console.log("[FrontEnd] Got response from server, starting to process stream");
         const reader = response.body?.getReader();
         if (!reader) throw new Error('Stream not available');
         
         const decoder = new TextDecoder();
         let storyDone = false;
+        let buffer = '';
         
         while (!storyDone) {
           const { done, value } = await reader.read();
           
           if (done) {
+            console.log("[FrontEnd] Stream done");
             storyDone = true;
             progress = 100;
             break;
           }
           
           const chunk = decoder.decode(value);
-          const lines = chunk.split('\n').filter(line => line.trim());
+          console.log("[FrontEnd] Received chunk:", chunk.substring(0, 100) + "...");
           
-          for (const line of lines) {
+          // Append the new chunk to our buffer
+          buffer += chunk;
+          
+          // Split the buffer by newlines and process each complete line
+          const lines = buffer.split('\n');
+          
+          // The last line might be incomplete, so we keep it in the buffer
+          buffer = lines.pop() || '';
+          
+          for (const line of lines.filter(line => line.trim())) {
             try {
+              console.log("[FrontEnd] Processing line:", line.substring(0, 50) + "...");
               const data = JSON.parse(line);
               
               if (data.type === 'content') {
+                console.log("[FrontEnd] Adding content:", data.content.substring(0, 30) + "...");
                 accumulatedContent += data.content;
                 
                 // Update word count
@@ -96,8 +112,10 @@
                 // Estimate progress based on target word count
                 const targetWords = request.wordLength || 1000;
                 progress = Math.min(Math.round((wordCount / targetWords) * 100), 99);
+                console.log(`[FrontEnd] Progress: ${progress}%, Words: ${wordCount}`);
               } 
               else if (data.type === 'stats') {
+                console.log("[FrontEnd] Received stats:", data);
                 totalTokens = data.totalTokens || 0;
                 totalCost = data.cost || 0;
                 const elapsed = (Date.now() - startTime) / 1000;
@@ -105,17 +123,42 @@
                 tokensPerSecond = elapsed > 0 ? Math.round(totalTokens / elapsed) : 0;
               }
               else if (data.type === 'title') {
+                console.log("[FrontEnd] Received title:", data.title);
                 title = data.title || 'Untitled Story';
               }
               else if (data.type === 'complete') {
+                console.log("[FrontEnd] Story generation complete");
                 storyDone = true;
                 progress = 100;
               }
             } catch (e) {
-              console.warn('Failed to parse JSON chunk:', line, e);
+              console.warn('[FrontEnd] Failed to parse JSON chunk:', line);
+              console.error('[FrontEnd] Parse error:', e);
+              
+              // If parsing failed, try to recover content from plaintext
+              if (line.trim() && !line.includes('{') && !line.includes('}')) {
+                console.log('[FrontEnd] Treating as plain text content:', line.substring(0, 30) + "...");
+                accumulatedContent += line + ' ';
+                
+                // Update word count
+                wordCount = accumulatedContent.split(/\s+/).filter(Boolean).length;
+                
+                // Estimate progress
+                const targetWords = request.wordLength || 1000;
+                progress = Math.min(Math.round((wordCount / targetWords) * 100), 99);
+              }
             }
           }
         }
+        
+        console.log("[FrontEnd] Story generated successfully:", { 
+          titleLength: title.length,
+          contentLength: accumulatedContent.length,
+          wordCount,
+          totalTokens,
+          totalCost,
+          totalTime
+        });
         
         // Save the generated story to the database
         if (user && accumulatedContent) {
@@ -123,7 +166,7 @@
         }
         
       } catch (err) {
-        console.error("Error during story generation:", err);
+        console.error("[FrontEnd] Error during story generation:", err);
         error = 'Failed to generate story. Please try again.';
       } finally {
         loading = false;
