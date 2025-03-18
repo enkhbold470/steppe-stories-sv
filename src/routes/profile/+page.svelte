@@ -74,7 +74,7 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <p class="text-gray-400 text-sm mb-1">User ID</p>
+            <p class="text-gray-400 text-sm mb-1">User UUID</p>
             <p class="text-white font-mono bg-gray-700 p-2 rounded text-sm overflow-x-auto">{user.id}</p>
           </div>
           
@@ -87,6 +87,24 @@
             <p class="text-gray-400 text-sm mb-1">Account Created</p>
             <p class="text-white">{createdAt || 'N/A'}</p>
           </div>
+
+          
+
+          <div>
+            <p class="text-gray-400 text-sm mb-1">Role</p>
+            <p class="text-white">{user.role || 'N/A'}</p>
+          </div>
+
+          <div>
+            <p class="text-gray-400 text-sm mb-1">Last Sign In</p>
+            <p class="text-white">{user.last_sign_in_at || 'N/A'}</p>
+          </div>
+
+          <div>
+            <p class="text-gray-400 text-sm mb-1">Updated At</p>
+            <p class="text-white">{user.updated_at || 'N/A'}</p>
+          </div>
+          
         </div>
       </div>
       
