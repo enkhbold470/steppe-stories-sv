@@ -5,7 +5,6 @@
   import type { User } from '@supabase/supabase-js';
   import { marked } from 'marked';
   import type { Story } from '$lib/types';
- 
   
   let stories: Story[] = [];
   let loading = true;
@@ -80,6 +79,26 @@
       minute: '2-digit'
     });
   }
+
+  function copyToClipboard(content: string) {
+    navigator.clipboard.writeText(content).then(() => {
+      alert('Story copied to clipboard!');
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+    });
+  }
+
+  function downloadMarkdown(story: Story) {
+    const blob = new Blob([story.content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${story.title}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 </script>
 
 <div class="max-w-6xl mx-auto px-4 py-8">
@@ -136,6 +155,12 @@
             >
               View Story
             </button>
+            <button 
+            on:click={() => selectedStory && downloadMarkdown(selectedStory)}
+            class="px-3 py-1.5 bg-cyan-700 hover:bg-cyan-800 text-white text-sm rounded transition-colors"
+          >
+            Download MD
+          </button>
           </div>
         </div>
       {/each}
@@ -163,6 +188,16 @@
           <div class="prose prose-invert prose-sm md:prose-base max-w-none">
             {@html previewHtml}
           </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-700 flex justify-between">
+          <button 
+            on:click={() => copyToClipboard(selectedStory?.content || '')}
+            class="px-3 py-1.5 bg-cyan-700 hover:bg-cyan-800 text-white text-sm rounded transition-colors"
+          >
+            Copy Text
+          </button>
+          
         </div>
       </div>
     </div>
