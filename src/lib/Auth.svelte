@@ -36,8 +36,8 @@
         />
       </div>
       <div>
-        <button type="submit" class="button block" aria-live="polite" disabled="{loading}">
-          <span>{loading ? 'Loading' : 'Send magic link'}</span>
+        <button type="submit" class="button block cursor-pointer" aria-live="polite" disabled="{loading}">
+          <span>{loading ? 'Sending...' : 'Send magic link'}</span>
         </button>
       </div>
     </form>

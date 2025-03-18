@@ -6,8 +6,18 @@
 @layer base {
   html {
     @apply bg-gray-900 text-gray-100;
-
     
+
+
+  }
+
+  button {
+    @apply cursor-pointer; /* Added cursor-pointer for buttons */
+    
+  }
+  input {
+    @apply bg-gray-700 text-gray-100;
+
   }
 }
 

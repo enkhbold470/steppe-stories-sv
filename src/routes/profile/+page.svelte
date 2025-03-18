@@ -111,7 +111,7 @@
       <div class="pt-4 border-t border-gray-700">
         <button 
           on:click={handleSignOut}
-          class="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded transition-colors"
+          class="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded transition-colors cursor-pointer"
         >
           Sign Out
         </button>

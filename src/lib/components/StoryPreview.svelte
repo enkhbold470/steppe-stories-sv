@@ -1,5 +1,6 @@
 <!-- src/lib/components/StoryPreview.svelte -->
 <script lang="ts">
+    import { WandSparkles, Copy, Download } from '@lucide/svelte';
     export let content = '';
     export let title = 'Generated Story';
 
@@ -35,29 +36,26 @@
 <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 mb-6">
   <div class="flex justify-between items-center mb-4">
     <h3 class="text-xl font-semibold text-cyan-400 flex items-center">
-      <span class="mr-2">📖</span>
+
+      <WandSparkles class="h-4 w-4 mr-1" />
       Your Generated Story
     </h3>
     <div class="flex gap-2">
       <button 
         id="copy-btn"
         on:click={copyToClipboard}
-        class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-md flex items-center"
+        class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-md flex items-center cursor-pointer"
         aria-label="Copy story to clipboard"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-        </svg>
+        <Copy class="h-4 w-4 mr-1" />
         Copy
       </button>
       <button 
         on:click={downloadStory}
-        class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-md flex items-center"
+        class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-md flex items-center cursor-pointer"
         aria-label="Download story as markdown"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-        </svg>
+        <Download class="h-4 w-4 mr-1" />
         Download
       </button>
     </div>

@@ -12,9 +12,8 @@
   // Define menu items
   const menuItems = [
     { name: 'Home', path: '/' },
-    { name: 'Story Generator', path: '/story-generator' },
+    { name: 'Story Generator', path: '/story-generator', requiresAuth: true },
     { name: 'My Stories', path: '/stories', requiresAuth: true },
-    { name: 'Profile', path: '/profile', requiresAuth: true },
   ];
   
   onMount(async () => {
@@ -31,8 +30,11 @@
   };
   
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    goto('/');
+    const confirmSignOut = confirm("Are you sure you want to sign out?");
+    if (confirmSignOut) {
+      await supabase.auth.signOut();
+      goto('/');
+    }
   };
 </script>
 
@@ -61,18 +63,20 @@
         </div>
       </div>
       <div class="hidden md:block">
-        <div class="ml-4 flex items-center md:ml-6">
+        <div class="ml-4 flex items-center md:ml-6 gap-4">
           {#if session}
+        
+            <a href="/profile" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium cursor-pointer">Profile</a>
             <button 
-              on:click={handleSignOut}
-              class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Sign Out
-            </button>
+            on:click={handleSignOut}
+            class="bg-red-950 hover:bg-red-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
+          >
+            Sign Out
+          </button>
           {:else}
             <a 
               href="/" 
-              class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+              class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
             >
               Sign In
             </a>
@@ -82,7 +86,7 @@
       <div class="-mr-2 flex md:hidden">
         <button 
           on:click={toggleNavbar}
-          class="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+          class="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white cursor-pointer"
         >
           <span class="sr-only">Open main menu</span>
           <!-- Icon for hamburger menu -->
@@ -116,14 +120,14 @@
       {#if session}
         <button 
           on:click={handleSignOut}
-          class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left"
+          class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left cursor-pointer"
         >
           Sign Out
         </button>
       {:else}
         <a 
           href="/" 
-          class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+          class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium cursor-pointer"
         >
           Sign In
         </a>

@@ -9,4 +9,16 @@ alwaysApply: true
 - You can @ files here
 - You can use markdown but dont have to
 
-Always start with creating todo.md to put up all the empty to-do lists, each to do list you supposed to check if you're running front and project you will probably bun run check, I prefer bun
+Always start with creating todo.md to put up all the empty to-do lists, each to do list you supposed to check if you're running front and project you will probably yarn check, I prefer yarn 
+
+Be careful when protecting pages. The server gets the user session from the cookies, which can be spoofed by anyone.
+
+Always use supabase.auth.getUser() to protect pages and user data.
+
+Never trust supabase.auth.getSession() inside server code such as middleware. It isn't guaranteed to revalidate the Auth token.
+
+It's safe to trust getUser() because it sends a request to the Supabase Auth server every time to revalidate the Auth token.
+
+Always start with creating todo.md to put up all the empty to-do lists, each to do list you supposed to check if you're running front and project you will probably yarn check, I prefer yarn
+
+Don't use buzz word like AI

@@ -299,7 +299,7 @@
           Story Generator
         </h1>
         <p class="text-gray-300 mt-2 max-w-2xl mx-auto">
-          Create unique AI-powered stories with detailed control over genre, content, and length
+          Create unique stories with detailed control over genre, content, and length
         </p>
       </div>
       
@@ -408,14 +408,14 @@
                     <a 
                       href="/stories" 
                       class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded transition-colors
-                            hover:shadow-lg hover:shadow-cyan-900/30 transform hover:-translate-y-1 transition-all duration-300"
+                            hover:shadow-lg hover:shadow-cyan-900/30 transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                     >
                       View My Stories
                     </a>
                     <button 
                       on:click={resetGenerator}
                       class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded 
-                            hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300"
+                            hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                     >
                       Generate Another Story
                     </button>

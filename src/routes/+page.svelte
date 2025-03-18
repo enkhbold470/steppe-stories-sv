@@ -6,6 +6,7 @@
     import { Bot, Sparkles, FileText, Users } from '@lucide/svelte'
     
     let session: AuthSession | null = null
+    let isLoading = false; // Track loading state
   
     onMount(() => {
       supabase.auth.getSession().then(({ data }) => {
@@ -27,6 +28,8 @@
       const email = (document.getElementById('email') as HTMLInputElement)?.value
       if (!email) return
       
+      isLoading = true; // Set loading state to true
+      
       try {
         const { error } = await supabase.auth.signInWithOtp({ email })
         if (error) throw error
@@ -35,6 +38,8 @@
         if (error instanceof Error) {
           alert(error.message)
         }
+      } finally {
+        isLoading = false; // Reset loading state
       }
     }
 </script>
@@ -48,7 +53,7 @@
         <span class="inline-block">Stories</span>
       </h1>
       <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto">
-        Craft unique AI-generated stories tailored to your imagination and preferences
+        Create unique stories and novels with detailed control over genre, content, and length
       </p>
       
       <div class="bg-gradient-to-r from-cyan-700 to-blue-900 p-8 rounded-xl shadow-2xl max-w-xl mx-auto">
@@ -62,12 +67,20 @@
             placeholder="Your email address" 
             class="w-full p-3 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
           />
-          <button 
-            on:click={handleLogin}
-            class="w-full bg-gradient-to-r from-cyan-500 to-cyan-300 hover:from-cyan-400 hover:to-cyan-200 text-gray-900 font-bold py-3 px-4 rounded-md shadow-lg transition-all duration-200"
-          >
-            Get Magic Link
-          </button>
+          {#if isLoading}
+            <button 
+              class="w-full cursor-progress bg-gray-600 text-white font-bold py-3 px-4 rounded-md shadow-lg transition-all duration-200"
+            >
+              Sending magic link...
+            </button>
+          {:else}
+            <button 
+              on:click={handleLogin}
+              class="w-full bg-gradient-to-r from-cyan-500 to-cyan-300 hover:from-cyan-400 hover:to-cyan-200 text-gray-900 font-bold py-3 px-4 rounded-md shadow-lg transition-all duration-200 cursor-pointer"
+            >
+              Get Magic Link
+            </button>
+          {/if}
         </div>
       </div>
     </div>
@@ -81,10 +94,10 @@
         <div class="bg-gray-800 p-6 rounded-lg shadow-md border border-gray-700">
           <div class="flex items-center mb-4">
             <Bot class="h-8 w-8 text-cyan-400 mr-3" />
-            <h3 class="text-xl font-semibold text-white">AI-Powered Generation</h3>
+            <h3 class="text-xl font-semibold text-white">Novel Generation</h3>
           </div>
           <p class="text-gray-300">
-            Leverage advanced AI models to create detailed, imaginative stories tailored to your preferences.
+            Leverage advanced novel generation to create detailed, imaginative stories tailored to your preferences.
           </p>
         </div>
         
