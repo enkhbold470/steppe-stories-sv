@@ -121,7 +121,7 @@
               else if (data.type === 'stats') {
                 console.log("[FrontEnd] Received stats:", data);
                 totalTokens = data.totalTokens || 0;
-                totalCost = data.cost || 0;
+                totalCost = data.totalCost || 0;
                 const elapsed = (Date.now() - startTime) / 1000;
                 totalTime = elapsed;
                 tokensPerSecond = elapsed > 0 ? Math.round(totalTokens / elapsed) : 0;
@@ -332,9 +332,8 @@
         {#if isGenerating}
           <div class="lg:col-span-8" 
                in:fly={{ x: 50, duration: 500, delay: 200, easing: elasticInOut }}>
-            {#if loading}
-              <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700 mb-6
-                          animate-fadeIn">
+            <!-- {#if loading} -->
+              <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700 mb-6 animate-fadeIn">
                 <h3 class="text-xl font-semibold text-cyan-400 mb-4">Generating your story...</h3>
                 
                 <div class="mb-4">
@@ -353,24 +352,25 @@
                   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
                     <div class="bg-gray-700 p-3 rounded animate-fadeInUp" style="animation-delay: 100ms">
                       <span class="block text-gray-400 text-sm">Words</span>
-                      <span class="font-medium text-white">{wordCount.toLocaleString()}</span>
+                      <span class="font-medium text-white">{wordCount}</span>
                     </div>
                     <div class="bg-gray-700 p-3 rounded animate-fadeInUp" style="animation-delay: 200ms">
-                      <span class="block text-gray-400 text-sm">Tokens</span>
-                      <span class="font-medium text-white">{totalTokens.toLocaleString()}</span>
+                      <span class="block text-gray-400 text-sm">Tokens~</span>
+                      <span class="font-medium text-white">{totalTokens}</span>
                     </div>
                     <div class="bg-gray-700 p-3 rounded animate-fadeInUp" style="animation-delay: 300ms">
-                      <span class="block text-gray-400 text-sm">Tokens/sec</span>
-                      <span class="font-medium text-white">{tokensPerSecond.toLocaleString()}</span>
+                      <span class="block text-gray-400 text-sm">Tokens/sec~</span>
+                      <span class="font-medium text-white">{tokensPerSecond}</span>
                     </div>
                     <div class="bg-gray-700 p-3 rounded animate-fadeInUp" style="animation-delay: 400ms">
-                      <span class="block text-gray-400 text-sm">Cost</span>
+                      <span class="block text-gray-400 text-sm">Cost~</span>
                       <span class="font-medium text-white">${totalCost.toFixed(4)}</span>
                     </div>
+                
                   </div>
                 {/if}
               </div>
-            {/if}
+            <!-- {/if} -->
             
             {#if error}
               <div class="bg-red-900 text-white p-4 rounded-lg mb-6 animate-shake" in:scale={{ duration: 300 }}>
