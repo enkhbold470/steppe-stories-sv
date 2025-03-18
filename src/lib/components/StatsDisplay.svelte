@@ -1,35 +1,30 @@
 <!-- src/lib/components/StatsDisplay.svelte -->
-<script>
+<script lang="ts">
     export let tokens = 0;
     export let cost = 0;
     export let time = 0;
   </script>
   
-  <div style="
-    background: rgba(13, 13, 17, 0.95);
-    border-radius: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 1.5rem"
-  >
-    <h5 style="color: #00f3ff; margin-bottom: 1rem">
-      <span class="me-2">📊</span>
+  <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 mb-6">
+    <h3 class="text-xl font-semibold text-cyan-400 mb-4 flex items-center">
+      <span class="mr-2">📊</span>
       Generation Stats
-    </h5>
+    </h3>
     
-    <div class="row">
-      <div class="col-md-4 mb-3">
-        <div style="color: rgba(255, 255, 255, 0.7)">Tokens Used</div>
-        <div style="color: white; font-size: 1.25rem; font-weight: 500">{tokens.toLocaleString()}</div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-gray-700 p-3 rounded">
+        <div class="text-gray-400 text-sm">Tokens Used</div>
+        <div class="text-white text-lg font-medium">{tokens.toLocaleString()}</div>
       </div>
       
-      <div class="col-md-4 mb-3">
-        <div style="color: rgba(255, 255, 255, 0.7)">Estimated Cost</div>
-        <div style="color: white; font-size: 1.25rem; font-weight: 500">${cost.toFixed(4)}</div>
+      <div class="bg-gray-700 p-3 rounded">
+        <div class="text-gray-400 text-sm">Estimated Cost</div>
+        <div class="text-white text-lg font-medium">${cost.toFixed(4)}</div>
       </div>
       
-      <div class="col-md-4 mb-3">
-        <div style="color: rgba(255, 255, 255, 0.7)">Generation Time</div>
-        <div style="color: white; font-size: 1.25rem; font-weight: 500">{time.toFixed(2)}s</div>
+      <div class="bg-gray-700 p-3 rounded">
+        <div class="text-gray-400 text-sm">Generation Time</div>
+        <div class="text-white text-lg font-medium">{time.toFixed(2)}s</div>
       </div>
     </div>
   </div>
