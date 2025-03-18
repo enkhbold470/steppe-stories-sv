@@ -4,17 +4,8 @@
   import { goto } from '$app/navigation';
   import type { User } from '@supabase/supabase-js';
   import { marked } from 'marked';
-  
-  interface Story {
-    id: string;
-    user_id: string;
-    title: string;
-    content: string;
-    word_count: number;
-    tokens_used: number;
-    created_at: string;
-    cost: number;
-  }
+  import type { Story } from '$lib/types';
+ 
   
   let stories: Story[] = [];
   let loading = true;
@@ -46,6 +37,8 @@
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
+
+      console.log(data);
       
       if (storiesError) throw storiesError;
       
@@ -124,15 +117,15 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-sm">
             <div class="bg-gray-700 p-3 rounded">
               <span class="block text-gray-400">Words</span>
-              <span class="font-medium text-white">{story.word_count.toLocaleString()}</span>
+              <span class="font-medium text-white">{story.stats.wordCount}</span>
             </div>
             <div class="bg-gray-700 p-3 rounded">
               <span class="block text-gray-400">Tokens Used</span>
-              <span class="font-medium text-white">{story.tokens_used.toLocaleString()}</span>
+              <span class="font-medium text-white">{story.stats.tokensUsed}</span>
             </div>
             <div class="bg-gray-700 p-3 rounded">
               <span class="block text-gray-400">Cost</span>
-              <span class="font-medium text-white">${story.cost.toFixed(4)}</span>
+              <span class="font-medium text-white">${story.stats.cost.toFixed(4)}</span>
             </div>
           </div>
           

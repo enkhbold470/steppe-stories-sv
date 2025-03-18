@@ -7,7 +7,7 @@
     import { Bot } from '@lucide/svelte';
     import { supabase } from '$lib/supabaseClient';
     import { goto } from '$app/navigation';
-    import type { StoryRequest, GeneratedStory } from '$lib/types';
+    import type { StoryRequest } from '$lib/types';
     import type { User } from '@supabase/supabase-js';
     import { fly, fade, scale } from 'svelte/transition';
     import { elasticInOut, quintOut } from 'svelte/easing';

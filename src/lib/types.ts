@@ -5,15 +5,22 @@ export interface StoryRequest {
     wordLength: number;
   }
   
-  export interface GeneratedStory {
-    id: string;
+
+  export interface Story {
+    story_id: string;
+    user_id: string;
     title: string;
     content: string;
-    stats: {
-      tokens: number;
-      cost: number;
-      time: number;
-    };
-    timestamp: Date;
+    word_count: number;
+    tokens_used: number;
+    created_at: string;
+    cost: number;
     prompt: string;
+    stats: {
+      cost: number;
+      wordCount: number;
+      tokensUsed: number;
+      generationTime: number;
+      tokensPerSecond: number;
+    };
   }
