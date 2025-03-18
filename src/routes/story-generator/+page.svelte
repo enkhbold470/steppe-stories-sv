@@ -9,6 +9,8 @@
     import { goto } from '$app/navigation';
     import type { StoryRequest, GeneratedStory } from '$lib/types';
     import type { User } from '@supabase/supabase-js';
+    import { fly, fade, scale } from 'svelte/transition';
+    import { elasticInOut, quintOut } from 'svelte/easing';
   
     let loading = false;
     let error = '';
@@ -22,6 +24,7 @@
     let tokensPerSecond = 0;
     let user: User | null = null;
     let title = '';
+    let isGenerating = false; // Track if we're in generation mode for layout
   
     // Check user authentication on mount
     onMount(async () => {
@@ -46,6 +49,7 @@
     async function generateStory(request: StoryRequest) {
       try {
         loading = true;
+        isGenerating = true; // Set to true when generation starts
         accumulatedContent = '';
         progress = 0;
         wordCount = 0;
@@ -170,29 +174,99 @@
         error = 'Failed to generate story. Please try again.';
       } finally {
         loading = false;
+        // Keep isGenerating true if we have content
+        isGenerating = accumulatedContent.length > 0;
       }
     }
   
     async function saveStoryToDatabase() {
+      console.log("[FrontEnd] Starting to save story to database");
+      console.log("[FrontEnd] User:", user?.id);
+      console.log("[FrontEnd] Content length:", accumulatedContent.length);
+      console.log("[FrontEnd] Title:", title || `${currentRequest?.genre} Story`);
+      
       try {
-        if (!user || !accumulatedContent) return;
+        if (!user || !accumulatedContent) {
+          console.error("[FrontEnd] Cannot save story: User or content missing");
+          return;
+        }
         
-        const { error: saveError } = await supabase
+        // Create a UUID for the story
+        const storyId = crypto.randomUUID();
+        console.log("[FrontEnd] Generated story ID:", storyId);
+        
+        // Create stats object
+        const statsObj = {
+          wordCount: wordCount,
+          tokensUsed: totalTokens,
+          generationTime: totalTime,
+          tokensPerSecond: tokensPerSecond,
+          cost: totalCost
+        };
+        console.log("[FrontEnd] Stats object:", statsObj);
+        
+        // Match fields to the database schema from supabaseModelCreation.sql
+        const storyData = {
+          story_id: storyId,
+          user_id: user.id,
+          title: title || `${currentRequest?.genre} Story`,
+          content: accumulatedContent,
+          prompt: currentRequest ? `Genre: ${currentRequest.genre}, Keywords: ${currentRequest.keywords}` : '',
+          stats: statsObj,
+          is_public: false
+        };
+        console.log("[FrontEnd] Story data prepared:", storyData);
+        
+        console.log("[FrontEnd] Inserting story into database...");
+        const { data, error: saveError } = await supabase
           .from('stories')
-          .insert({
+          .insert(storyData)
+          .select();
+        
+        if (saveError) {
+          console.error("[FrontEnd] Database save error:", saveError);
+          throw saveError;
+        }
+        
+        console.log("[FrontEnd] Story saved successfully:", data);
+        
+      } catch (err: any) {
+        console.error("[FrontEnd] Error saving story:", err);
+        if (err.code === '23503') {
+          console.error("[FrontEnd] Foreign key violation - user profile might not exist");
+          // Try to create profile if it doesn't exist
+          await createUserProfileIfNeeded();
+          error = 'Story generated. We\'re setting up your account - please try saving again.';
+        } else if (err.code === '23505') {
+          console.error("[FrontEnd] Duplicate key violation - story ID already exists");
+          error = 'Story generated but failed to save (duplicate ID). Try again.';
+        } else {
+          error = 'Story generated but failed to save to your account.';
+        }
+      }
+    }
+  
+    // Helper function to create user profile if it doesn't exist
+    async function createUserProfileIfNeeded() {
+      if (!user) return;
+      
+      console.log("[FrontEnd] Attempting to create user profile");
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .upsert({
             user_id: user.id,
-            title: title || `${currentRequest?.genre} Story`,
-            content: accumulatedContent,
-            word_count: wordCount,
-            tokens_used: totalTokens,
-            cost: totalCost
+            username: user.email,
+            subscription_status: 'free'
           });
-        
-        if (saveError) throw saveError;
-        
-      } catch (err) {
-        console.error("Error saving story:", err);
-        error = 'Story generated but failed to save to your account.';
+          
+        if (error) {
+          console.error("[FrontEnd] Failed to create profile:", error);
+        } else {
+          console.log("[FrontEnd] Profile created or updated:", data);
+        }
+      } catch (err: any) {
+        console.error("[FrontEnd] Error creating profile:", err);
       }
     }
   
@@ -209,6 +283,12 @@
         loading = false;
       });
     }
+  
+    function resetGenerator() {
+      accumulatedContent = '';
+      error = '';
+      isGenerating = false; // Reset layout to centered
+    }
   </script>
   
   <div class="min-h-screen bg-gray-900">
@@ -223,90 +303,148 @@
         </p>
       </div>
       
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div class="lg:col-span-4">
-          <div class="bg-gray-800 rounded-lg shadow-lg p-6 h-full border border-gray-700">
-            <h3 class="text-xl font-semibold text-cyan-400 mb-4 flex items-center">
-              <span class="mr-2">⚙️</span>
-              Story Parameters
-            </h3>
+      <!-- Dynamic grid layout that changes based on isGenerating state -->
+      <div class="grid grid-cols-1 {isGenerating ? 'lg:grid-cols-12' : ''} gap-6">
+        <!-- Parameters card - centered when not generating, moves left when generating -->
+        <div class="{isGenerating ? 'lg:col-span-4' : 'max-w-xl mx-auto w-full'} 
+                    transition-all duration-500 ease-in-out">
+          <div class="bg-gray-800 rounded-lg shadow-lg p-6 h-full border border-gray-700
+                      {isGenerating ? 'transform-none' : 'hover:shadow-cyan-900/20 hover:shadow-lg'}
+                      transition-all duration-300">
+            {#if !isGenerating}
+              <h3 in:fade={{ duration: 300 }} 
+                  class="text-xl font-semibold text-cyan-400 mb-4 flex items-center">
+                <span class="mr-2">⚙️</span>
+                Story Parameters
+              </h3>
+            {:else}
+              <h3 in:fade={{ duration: 300 }} 
+                  class="text-xl font-semibold text-cyan-400 mb-4 flex items-center">
+                <span class="mr-2">⚙️</span>
+                Story Parameters
+              </h3>
+            {/if}
             <StoryForm on:submit={handleGenerate} />
           </div>
         </div>
         
-        <div class="lg:col-span-8">
-          {#if loading}
-            <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700 mb-6">
-              <h3 class="text-xl font-semibold text-cyan-400 mb-4">Generating your story...</h3>
-              
-              <div class="mb-4">
-                <div class="flex justify-between text-sm text-gray-400 mb-1">
-                  <span>Progress</span>
-                  <span>{progress}%</span>
+        <!-- Story generation content - only appears when generating -->
+        {#if isGenerating}
+          <div class="lg:col-span-8" 
+               in:fly={{ x: 50, duration: 500, delay: 200, easing: elasticInOut }}>
+            {#if loading}
+              <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700 mb-6
+                          animate-fadeIn">
+                <h3 class="text-xl font-semibold text-cyan-400 mb-4">Generating your story...</h3>
+                
+                <div class="mb-4">
+                  <div class="flex justify-between text-sm text-gray-400 mb-1">
+                    <span>Progress</span>
+                    <span>{progress}%</span>
+                  </div>
+                  <div class="w-full bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                    <div class="bg-cyan-600 h-2.5 rounded-full transition-all duration-300 
+                                animate-pulse" 
+                         style="width: {progress}%"></div>
+                  </div>
                 </div>
-                <div class="w-full bg-gray-700 rounded-full h-2.5">
-                  <div class="bg-cyan-600 h-2.5 rounded-full transition-all duration-300" style="width: {progress}%"></div>
-                </div>
+                
+                {#if wordCount > 0}
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
+                    <div class="bg-gray-700 p-3 rounded animate-fadeInUp" style="animation-delay: 100ms">
+                      <span class="block text-gray-400 text-sm">Words</span>
+                      <span class="font-medium text-white">{wordCount.toLocaleString()}</span>
+                    </div>
+                    <div class="bg-gray-700 p-3 rounded animate-fadeInUp" style="animation-delay: 200ms">
+                      <span class="block text-gray-400 text-sm">Tokens</span>
+                      <span class="font-medium text-white">{totalTokens.toLocaleString()}</span>
+                    </div>
+                    <div class="bg-gray-700 p-3 rounded animate-fadeInUp" style="animation-delay: 300ms">
+                      <span class="block text-gray-400 text-sm">Tokens/sec</span>
+                      <span class="font-medium text-white">{tokensPerSecond.toLocaleString()}</span>
+                    </div>
+                    <div class="bg-gray-700 p-3 rounded animate-fadeInUp" style="animation-delay: 400ms">
+                      <span class="block text-gray-400 text-sm">Cost</span>
+                      <span class="font-medium text-white">${totalCost.toFixed(4)}</span>
+                    </div>
+                  </div>
+                {/if}
               </div>
-              
-              {#if wordCount > 0}
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
-                  <div class="bg-gray-700 p-3 rounded">
-                    <span class="block text-gray-400 text-sm">Words</span>
-                    <span class="font-medium text-white">{wordCount.toLocaleString()}</span>
-                  </div>
-                  <div class="bg-gray-700 p-3 rounded">
-                    <span class="block text-gray-400 text-sm">Tokens</span>
-                    <span class="font-medium text-white">{totalTokens.toLocaleString()}</span>
-                  </div>
-                  <div class="bg-gray-700 p-3 rounded">
-                    <span class="block text-gray-400 text-sm">Tokens/sec</span>
-                    <span class="font-medium text-white">{tokensPerSecond.toLocaleString()}</span>
-                  </div>
-                  <div class="bg-gray-700 p-3 rounded">
-                    <span class="block text-gray-400 text-sm">Cost</span>
-                    <span class="font-medium text-white">${totalCost.toFixed(4)}</span>
-                  </div>
-                </div>
-              {/if}
-            </div>
-          {/if}
-          
-          {#if error}
-            <div class="bg-red-900 text-white p-4 rounded-lg mb-6">
-              <p>{error}</p>
-            </div>
-          {/if}
-          
-          {#if accumulatedContent}
-            <StoryPreview content={accumulatedContent} title={title || `${currentRequest?.genre || ''} Story`} />
-            <StatsDisplay tokens={totalTokens} cost={totalCost} time={totalTime} />
+            {/if}
             
-            <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700 mt-6">
-              <h3 class="text-xl font-semibold text-cyan-400 mb-4">Next Steps</h3>
-              <p class="text-gray-300 mb-4">
-                Your story has been saved to your account. You can view it anytime in your story history.
-              </p>
-              <div class="flex flex-wrap gap-3">
-                <a 
-                  href="/stories" 
-                  class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded transition-colors"
-                >
-                  View My Stories
-                </a>
-                <button 
-                  on:click={() => {
-                    accumulatedContent = '';
-                    error = '';
-                  }}
-                  class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
-                >
-                  Generate Another Story
-                </button>
+            {#if error}
+              <div class="bg-red-900 text-white p-4 rounded-lg mb-6 animate-shake" in:scale={{ duration: 300 }}>
+                <p>{error}</p>
               </div>
-            </div>
-          {/if}
-        </div>
+            {/if}
+            
+            {#if accumulatedContent}
+              <div in:fade={{ duration: 500 }}>
+                <StoryPreview content={accumulatedContent} title={title || `${currentRequest?.genre || ''} Story`} />
+                <StatsDisplay tokens={totalTokens} cost={totalCost} time={totalTime} />
+                
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700 mt-6 animate-fadeIn">
+                  <h3 class="text-xl font-semibold text-cyan-400 mb-4">Next Steps</h3>
+                  <p class="text-gray-300 mb-4">
+                    Your story has been saved to your account. You can view it anytime in your story history.
+                  </p>
+                  <div class="flex flex-wrap gap-3">
+                    <a 
+                      href="/stories" 
+                      class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded transition-colors
+                            hover:shadow-lg hover:shadow-cyan-900/30 transform hover:-translate-y-1 transition-all duration-300"
+                    >
+                      View My Stories
+                    </a>
+                    <button 
+                      on:click={resetGenerator}
+                      class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded 
+                            hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300"
+                    >
+                      Generate Another Story
+                    </button>
+                  </div>
+                </div>
+              </div>
+            {/if}
+          </div>
+        {/if}
       </div>
     </div>
   </div>
+
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes fadeInUp {
+      from { 
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    .animate-fadeIn {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    
+    .animate-fadeInUp {
+      animation: fadeInUp 0.5s ease-in-out;
+    }
+    
+    .animate-shake {
+      animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+  </style>

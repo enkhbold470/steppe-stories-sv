@@ -34,22 +34,31 @@ export async function POST({ request }) {
           console.log("[API] Starting to process stream chunks");
           for await (const chunk of stream) {
             chunkCount++;
+            // Handle different types of chunks from Anthropic
             if (chunk.type === 'content_block_delta') {
-              const text = chunk.delta.text;
-              fullStory += text;
-              
-              // Send the content as a proper JSON object
-              const contentChunk = JSON.stringify({
-                type: 'content',
-                content: text
-              });
-              
-              controller.enqueue(encoder.encode(contentChunk + '\n'));
-              
-              // Log every 10th chunk to avoid flooding the console
-              if (chunkCount % 10 === 0) {
-                console.log(`[API] Processed ${chunkCount} chunks, latest text: "${text.substring(0, 30)}..."`);
+              // Safely access text property with type checking
+              const delta = chunk.delta;
+              if ('text' in delta) {
+                const text = delta.text;
+                fullStory += text;
+                
+                // Send the content as a proper JSON object
+                const contentChunk = JSON.stringify({
+                  type: 'content',
+                  content: text
+                });
+                
+                controller.enqueue(encoder.encode(contentChunk + '\n'));
+                
+                // Log every 10th chunk to avoid flooding the console
+                if (chunkCount % 10 === 0) {
+                  console.log(`[API] Processed ${chunkCount} chunks, latest text: "${text.substring(0, 30)}..."`);
+                }
+              } else {
+                console.log("[API] Received non-text delta:", delta);
               }
+            } else {
+              console.log("[API] Received non-content chunk type:", chunk.type);
             }
           }
 

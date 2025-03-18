@@ -31,3 +31,18 @@
   - [x] Add console logs to API server
   - [x] Add console logs to frontend
   - [x] Log stream processing details
+
+## Latest Requirements
+- [x] Fix story saving to database
+  - [x] Debug database saving procedure with console logs
+  - [x] Ensure correct field mapping to database schema
+  - [x] Handle errors properly
+- [x] Improve story generator layout
+  - [x] Center story parameters card initially
+  - [x] Move parameters to left when generating
+  - [x] Add canvas-like display on the right side
+  - [x] Keep all existing features (stats, download, copy)
+- [x] Add more animations
+  - [x] Add transitions for layout changes
+  - [x] Add loading animations
+  - [x] Improve visual feedback
