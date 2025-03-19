@@ -14,7 +14,7 @@
 		"lint": "prettier --check . && eslint .",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
-		"production": "HOST=0.0.0.0 yarn build && yarn preview -- --port 5173 --host"
+		"production": "HOST=0.0.0.0 node build/index.js"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
@@ -50,6 +50,7 @@
 		"@anthropic-ai/sdk": "^0.39.0",
 		"@lucide/svelte": "^0.483.0",
 		"@supabase/supabase-js": "^2.49.1",
+		"@sveltejs/adapter-node": "^5.2.12",
 		"alfaaz": "^1.1.0",
 		"marked": "^15.0.7",
 		"openai": "^4.87.3"
